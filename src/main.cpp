@@ -15,6 +15,15 @@
 
 int main(int argc, char **argv)
 {
+    // Read flags
+    bool xfer = false;
+    for (int i = 1; i < argc; ++i)
+    {
+        if (strcmp(argv[i], "--transfer") == 0 || strcmp(argv[i], "--t") == 0)
+        {
+            xfer = true;
+        }
+    }
     // Kind of activation to use (default relu)
     std::string activation = "relu";
 
@@ -28,42 +37,55 @@ int main(int argc, char **argv)
     float *style_img = new float[in];
     float *content_img = new float[in];
     float *comb_img = new float[in];
+    float *test_x = new float[in];
 
     std::fstream f;
     
-    /*
-     *
-     * Read testing data 
-     *
-     *
-     */
-    
-    f.open("src/images/rand.txt", std::fstream::in);
-    for (std::string line; std::getline(f, line);){
-        test_x[pos] = std::stof(line);
-        pos++;
-    }
-    f.close();
-
-    int print_pixels = 5;
-    for (int i = 0; i < print_pixels; i++){
-        std::cout << test_x[i] << ", " << std::endl;
-    }
-    std::cout << std::endl;
-    for (int i = 0; i < print_pixels; i++){
-        std::cout << test_x[in-1-i] << ", " << std::endl;
-    }
-
-
+    //Read image files into arrays
     std::cout << "Loaded training set." << std::endl;
+    if (xfer){
+        f.open("src/images/content.txt", std::fstream::in);
+        for (std::string line; std::getline(f, line);){
+            content_img[pos] = std::stof(line);
+            pos++;
+        }
+        f.close();
 
+        f.open("src/images/style.txt", std::fstream::in);
+        for (std::string line; std::getline(f, line);){
+            comb_img[pos] = std::stof(line);
+            pos++;
+        }
+        f.close();    
 
+        f.open("src/images/rand.txt", std::fstream::in);
+        for (std::string line; std::getline(f, line);){
+            comb_img[pos] = std::stof(line);
+            pos++;
+        }
+        f.close();
+    } else {
+        f.open("src/images/elephant.txt", std::fstream::in);
+        for (std::string line; std::getline(f, line);){
+            test_x[pos] = std::stof(line);
+            pos++;
+        }
+        f.close();
+
+        int print_pixels = 5;
+        for (int i = 0; i < print_pixels; i++){
+            std::cout << test_x[i] << ", " << std::endl;
+        }
+        std::cout << std::endl;
+        for (int i = 0; i < print_pixels; i++){
+            std::cout << test_x[in-1-i] << ", " << std::endl;
+        }
+    }
     
     std::cout << "input NCHW: " << 1 << " " << c << " " << h << " " << w << " " << std::endl;
 
-    bool random_weights = false;
+    bool random_weights = false; //Use weights from .h5 file
     Model *model = new Model(1, c, h, w, random_weights);
-    // std::cout << " hello "<< std::endl;
 
     // Model is fully defined here:
     // https://gist.github.com/baraldilorenzo/07d7802847aaad0a35d3
@@ -95,8 +117,6 @@ int main(int argc, char **argv)
     model->add(activation);
     model->add("max pool", { 2 });
 
-    std::cout << "\n**Starting block 5**" << std:: endl;
-
     model->add("conv", { 512, 3, 1, 1});       //(3x3x512x512)   block5_conv1
     model->add(activation);
     model->add("conv", { 512, 3, 1, 1});       //(3x3x512x512)   block5_conv2
@@ -104,8 +124,6 @@ int main(int argc, char **argv)
     model->add("conv", { 512, 3, 1, 1});       //(3x3x512x512)   block5_conv3
     model->add(activation);
     model->add("max pool", { 2 });
-
-    std::cout << "\n**Starting Dense layers**" << std:: endl;
 
     model->add("dense", { 4096 });
     model->add(activation);
@@ -116,62 +134,56 @@ int main(int argc, char **argv)
     model->init_workspace();
 
 
-    // Train the model on the training set for 25 epochs
-    std::cout << "Predicting on " << n_classes << " classes." << std::endl;
-    // model->train(train_X, train_Y, 0.03f, n_train, 35);
-
-    // Load test set
-    // int n_test;
-    // float *test_X, *test_Y;
-    // LoadMNISTData(dirname + "/test-images.idx3-ubyte",
-    //     dirname + "/test-labels.idx1-ubyte",
-    //     n_test, c, h, w, n_classes, &test_X, &test_Y);
-    
-
-    // Evaluate model on the test set
+    // Use data peeping method:
     model->check_weights();
 
-    //possible modes for setting:
-    //0 => save content loss
-    //1 => save style   loss
-    //2 => transfer style
-    model->set_mode(0);
-    float *test_y = model->predict(test_x, 1); //content loss
-    delete[] test_y;
-    
-    //Save style loss metric
-    model->set_mode(1);
-    test_y = model->predict(test_x, 1); 
-    delete[] test_y;
+    // USE NEURAL NETWORK
+    float *test_y;
+    if (xfer){
+        // DO STYLE TRANSFER
+        model->set_mode(0);
+        test_y = model->predict(content_img, 1); //content loss
+        delete[] test_y;
+        
+        //Save style loss metric
+        model->set_mode(1);
+        test_y = model->predict(style_img, 1); 
+        delete[] test_y;
 
-    //Do the Style transfer
-    model->set_mode(2);
-    test_y = model->transfer(test_x, 1); // CHANGE TO TRANSFER, make func, stick in loop
+        //Do the Style transfer
+        model->set_mode(2);
+        test_y = model->transfer(comb_img, 1); // CHANGE TO TRANSFER, make func, stick in loop
+    } else {
+        // MAKE VGG PREDICTION
+        test_y = model->predict(test_x, 1)
+        // WRITE DATA TO FILE
+        std::ofstream prediction_file;
+        prediction_file.open("outputs/predictions.txt");
 
+        for (int i = 0 ; i < n_classes; i++)
+            prediction_file << test_y[i] << "," ;
+        prediction_file << "\n";
+        prediction_file.close();
+        std::cout << "Wrote Predictions to file." << std::endl;
+    }
 
     model->check_inputs();
 
 
 
-
-    // WRITE DATA TO FILE
-    std::ofstream prediction_file;
-    prediction_file.open("outputs/predictions.txt");
-
-    for (int i = 0 ; i < n_classes; i++)
-        prediction_file << test_y[i] << "," ;
-    prediction_file << "\n";
-    prediction_file.close();
-    std::cout << "Wrote Predictions to file." << std::endl;
-
     // Delete all dynamically allocated data
-    // delete[] res->predictions;
-    // delete res;
+
     delete model;
-    // delete[] train_X;
-    // delete[] train_Y;
-    // delete[] test_X;
     delete[] test_y;
+
+    if (xfer){
+        delete[] style_img;
+        delete[] content_img;
+        delete[] comb_img;
+    } else {
+        delete[] test_x;
+    }
+    
 
     return 0;
 }
