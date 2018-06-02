@@ -169,11 +169,11 @@ NB: There are several directories with similar names, but this one is the best.
 
 Run:
 
-'''
+```bash
 make clean all
 /bin/main
 python src/predict.py
-'''
+```
 
 Ouputs (in order):
 Lots of data will be spit out (it's still setup for debugging). Including:
