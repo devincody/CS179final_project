@@ -731,7 +731,13 @@ void Conv2D::forward_pass()
         &one, bias_desc, biases,
         &one, out_shape, out_batch) );
 
+    cudnnDataType_t dtype;
+    int n, c, h, w, n_stride, c_stride, h_stride, w_stride;
+    CUDNN_CALL( cudnnGetTensor4dDescriptor(out_shape, &dtype,
+        &n, &c, &h, &w, &n_stride, &c_stride, &h_stride, &w_stride) );
 
+    int out_size = n * c * h * w;  
+    
     if (style_transfer == 0){
         // SAVE CONTENT loss 
         if(!layer_name.compare(0,11, "block5_conv2")){
