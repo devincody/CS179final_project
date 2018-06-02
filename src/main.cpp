@@ -22,6 +22,7 @@ int main(int argc, char **argv)
         if (strcmp(argv[i], "--transfer") == 0 || strcmp(argv[i], "--t") == 0)
         {
             xfer = true;
+            std::cout << "transfer mode engaged" << std::endl;
         }
     }
     // Kind of activation to use (default relu)

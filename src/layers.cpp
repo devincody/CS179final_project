@@ -278,7 +278,6 @@ void Layer::init_weights_biases()
         float* h_weights = new float[n_weights]();
         float* h_biases  = new float[n_biases]();
 
-        // std::cout << "feature Tensor = n: " << n << ", c: " << c << ", h: "<< h << ", w: " << w << std::endl;
         if (!layer_name.compare(7,4,"dens")){
             // IF DENSE
             std::cout << "n_weights: " << n_weights << " n_biases: " << n_biases << std::endl;
@@ -295,10 +294,7 @@ void Layer::init_weights_biases()
         }
         // Obtain correctly ordered dataset from hdf5 file
 
-
-        // std::cout <<  "done getting weights, biases" << std::endl;
-        // cudaMemcpy to weights
-        // std::cout << "ASKING FOR " << (n_weights + n_biases)*4 << " BYTES" << std::endl;
+        // MEMCPY DATA TO GPU
         if (h_weights){
             CUDA_CALL(cudaMemcpy(weights, h_weights, n_weights*sizeof(float), cudaMemcpyHostToDevice));
         } else {
@@ -345,17 +341,15 @@ void Input::forward_pass() {}
 /** Nothing is behind the input layer. */
 void Input::backward_pass(float learning_rate) {
     //TODO (final):
-    //Make flag to determine whether or not to do a gradient descent
-    // out_batch -= lr*grad_out_batch;
 
-
-    if (style_transfer == 2){
+    if (style_transfer == 2){ //IFF in transfer mode
         cudnnDataType_t dtype;
         int n, c, h, w, n_stride, c_stride, h_stride, w_stride;
         CUDNN_CALL( cudnnGetTensor4dDescriptor(out_shape, &dtype, &n, &c, &h, &w,
             &n_stride, &c_stride, &h_stride, &w_stride) );
 
         float eta = -learning_rate;
+        // out_batch -= lr*grad_out_batch;
         CUBLAS_CALL(cublasSaxpy(cublasHandle, n*c*h*w,
                                 &eta,
                                 grad_out_batch, 1,
@@ -737,11 +731,11 @@ void Conv2D::forward_pass()
         &n, &c, &h, &w, &n_stride, &c_stride, &h_stride, &w_stride) );
 
     int out_size = n * c * h * w;  
-    
+
     if (style_transfer == 0){
         // SAVE CONTENT loss 
         if(!layer_name.compare(0,11, "block5_conv2")){
-
+            // copy to loss_metric
             CUBLAS_CALL(cublasScopy(cublasHandle, out_size,
                                     out_batch, 1,
                                     loss_metric, 1));
@@ -832,14 +826,12 @@ void Conv2D::backward_pass(float learning_rate)
         // 
         cublasSgemm
 
-
     ***********************************************************/
     //get stats on feature array
     cudnnDataType_t dtype;
     int n, c, h, w, n_stride, c_stride, h_stride, w_stride;
     CUDNN_CALL( cudnnGetTensor4dDescriptor(out_shape, &dtype,
         &n, &c, &h, &w, &n_stride, &c_stride, &h_stride, &w_stride) );
-
     int out_size = n * c * h * w;   
 
 	if (style_transfer == 2){
@@ -905,7 +897,7 @@ void Conv2D::backward_pass(float learning_rate)
 
 void Conv2D::gram(float* in, int n, int cwh, float* gram){
     // gram is an nxn matrix
-    // we tream in as a 2D (n)x(c*w*h) matrix
+    // we treat in as a 2D (n)x(c*w*h) matrix, then do AA^T
     float zero = 0;
     float one = 1;
     CUBLAS_CALL(cublasSgemm(cublasHandle, CUBLAS_OP_N, CUBLAS_OP_T,

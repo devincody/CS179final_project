@@ -339,7 +339,7 @@ result *Model::evaluate(const float *eval_X, float *eval_Y, int n_examples)
     return ret;
 }
 
-
+//Execute 1000 forward and backwards passes. This should update the combination image
 void Model::transfer(float *batch_X, float lr)
 {
 
@@ -359,10 +359,10 @@ void Model::transfer(float *batch_X, float lr)
     }
 }
 
+// Set style_transfer mode.
 void Model::set_mode(int flag)
 {
     std::cout << "\n*******setting flags*******" << std::endl;
-    // Do a forward pass through every layer
     std::vector<Layer *>::iterator it;
     for (it = this->layers->begin(); it != this->layers->end(); ++it){
         std::cout << "layer: " << (*it)->layer_name <<std::endl;
@@ -370,11 +370,10 @@ void Model::set_mode(int flag)
     }
 }
 
-
+// Print out weights if appropriate
 void Model::check_weights()
 {
     std::cout << "\n*******checking weights*******" << std::endl;
-    // Do a forward pass through every layer
     std::vector<Layer *>::iterator it;
     for (it = this->layers->begin(); it != this->layers->end(); ++it){
         std::cout << "layer: " << (*it)->layer_name <<std::endl;
@@ -384,15 +383,14 @@ void Model::check_weights()
                 // if layer_name != pool
                 (*it)->print_weight(0, 10);
             }
-            // std::cout << " weight[0]: " << t <<std::endl;
         }
     }
 }
 
+// Print out inputs if appropriate
 void Model::check_inputs()
 {
     std::cout << "\n*******checking inputs*******" << std::endl;
-    // Do a forward pass through every layer
     std::vector<Layer *>::iterator it;
     for (it = this->layers->begin(); it != this->layers->end(); ++it){
         std::cout << "layer: " << (*it)->layer_name <<std::endl;
@@ -402,7 +400,6 @@ void Model::check_inputs()
                 // if layer_name != pool
                 (*it)->print_input_tensor(0, 10);
             }
-            // std::cout << " weight[0]: " << t <<std::endl;
         }
     }
 }

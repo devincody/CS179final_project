@@ -157,4 +157,30 @@ Obviously, we weren't able to make quality predictions or do actual style transf
 
 The last bit of work (I think) is to figure out where the VGG predicitons are going wrong, whether there is some issue with data order or the input images. I am faily confident in the style transfer code. 
 
+Some code is needed to postprocess the image data after the network is done with it.
+
 ## Execution Instructions
+
+The easiest way to run the code is to go to my directory on titan:
+
+/home/dcody/CS179final_project/
+
+NB: There are several directories with similar names, but this one is the best.
+
+Run:
+
+'''
+make clean all
+/bin/main
+python src/predict.py
+'''
+
+Ouputs (in order):
+Lots of data will be spit out (it's still setup for debugging). Including:
+- First and last 5 data points from the image
+- Dimensions of each weight layer
+- First 10 values from the weights/biases of each layer
+- First 10 values from the inputs features from each layer
+- The top 5 or 10 predictions from the VGG16 neural network (produced by python)
+
+If you want to move the files somewhere else, you will have to move the weights.h5 file whose location is currently hard coded.
