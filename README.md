@@ -1,5 +1,3 @@
-README
-
 # A GPU implemention of the neural Algorithm of Artistic Style
 
 ## Overview of the Algorithm
@@ -33,11 +31,32 @@ To implement this algorithm, we essentially need to do 3 things:
 
 VGG16 is an award-winning convolutional neural network that has been train to identitfy 1000
 classes of objects. The fact that it was trained is vital to our algorithm since training is
-what enables the layer features to encode certain information about the image. VGG
+what enables the layer features to encode certain information about the image. VGG16 is a
+particular neural network topology which consists of 16 convolutional/dense layers with varying
+numbers of parameters. The chief difficulty of this part of the project was obtaining and using
+the network weights provided by the network designers.
 
 ### Loss Metrics
 
+As discussed previously, although many neural networks use a single loss function, this
+used multiple loss functions which are evaluated a multiple layers throughout the back
+propagation process. In each of these pre-defined loss-layers, we store a matrix of elements
+which represent the feature outputs from either the content or the style images. For example,
+in the layer named "block5conv2" we store a n * c * w * h-sized array which holds the content
+image's feature outputs. Or in the layer "block5conv1", we store an n * n array which holds
+the gram matrix of the feature outputs for the style image.
+
+To implement these, I defined a flag variable (bool style_transfer) which told the program
+whether to save the feature output to the loss_metrics variable, to save the gram matrix of
+the feature output to the loss_metrics variable, to evaluate the style/content loss during
+backpropagation, or to just run and make predictions normally.
+
 ### Gradient Descent
+
+This ended up being easier than expected. All I had to do was alter the backward_propagation
+function for the input to push the gradient all the way to the input image. Lastly, by making
+small adjustments to the train_on_batch() function, and calling it multiple times I could
+make many updates to the image.
 
 ## Results
 
@@ -45,7 +64,16 @@ what enables the layer features to encode certain information about the image. V
 
 One of the main objectives of this project was to implement VGG16 using the infrastructure that
 was give to us during labs 5 and 6. Although I was able to sucessfully steal the weight matricies
-from python keras, and 
+from python keras, store them in a reasonable format (.h5), and upload them sucessfully to the
+weights matricies as defined in the layers, getting reasonable predictions out of the CNN was 
+still very difficult. Ultimately, the error is likely a data formatting issue somewhere a long
+the road. 
+
+Code highlights:
+1. h5_utils.cpp
+	- C++ scripts that were developed to read in the .h5 files into arrays before they were
+	  cudaMalloc'ed to their proper places in the weights matricies. 
+2. 
 
 ### Checking functions
 
@@ -57,6 +85,8 @@ from python keras, and
 ## Discussion
 
 ### Sucesses
+
+If there's anything I've learnt
 
 ### Failures
 
