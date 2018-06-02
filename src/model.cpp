@@ -339,36 +339,23 @@ result *Model::evaluate(const float *eval_X, float *eval_Y, int n_examples)
     return ret;
 }
 
-/**
- * Updates the loss_metric variable in predetermined layers. Stores either the
- * gram matrix of the layers or the output of the layers depending on input.
- *
- * @param batch_X The starting point of the minibatch of data we wish to use to
- *                  perform the next stochastic gradient descent update
- *
- */
-void Model::update_metrics(const float *batch_X)
+
+void Model::transfer(const float *batch_X, float lr)
 {
-    //TODO (final):
+    assert(this->has_loss && "Cannot train without a loss function.");
 
-    std::vector<std::string> style_layers = {"block1_conv1", "block2_conv1",
-                                               "block3_conv1", "block4_conv1",
-                                               "block5_conv1"};
-
-    std::string content_layers = "block5_conv2";
     // Copy input and output minibatches into the model's buffers
     copy_input_batch(batch_X);
 
-    // // Do a forward pass through every layer
-    // std::vector<Layer *>::iterator it;
-    // for (it = this->layers->begin(); it != this->layers->end(); ++it){
-    //     (*it)->forward_pass();
-    // }
+    // Do a forward pass through every layer
+    std::vector<Layer *>::iterator it;
+    for (it = this->layers->begin(); it != this->layers->end(); ++it)
+        (*it)->forward_pass();
 
-    // // Do a backward pass through every layer
-    // std::vector<Layer *>::reverse_iterator rit;
-    // for (rit = this->layers->rbegin(); rit != this->layers->rend(); ++rit)
-    //     (*rit)->backward_pass(lr);
+    // Do a backward pass through every layer
+    std::vector<Layer *>::reverse_iterator rit;
+    for (rit = this->layers->rbegin(); rit != this->layers->rend(); ++rit)
+        (*rit)->backward_pass(lr);
 }
 
 void Model::set_mode(int flag)

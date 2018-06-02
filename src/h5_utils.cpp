@@ -1,9 +1,9 @@
-// #include "H5Cpp.h"
-// #include <iostream>
+/**
+ * Implementation of h5 dataset decoder
+ * @author Devin Cody
+ * @date June 1, 2018
+ */
 
-// const H5std_string FILE_NAME("weights.h5");
-// const H5std_string kernel_NAME( "kernel:0" );
-// const H5std_string bias_NAME( "bias:0" );
 
 #include "h5_utils.hpp"
 

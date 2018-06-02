@@ -70,13 +70,40 @@ still very difficult. Ultimately, the error is likely a data formatting issue so
 the road. 
 
 Code highlights:
-1. h5_utils.cpp
+1. src/h5_utils.cpp
 	- C++ scripts that were developed to read in the .h5 files into arrays before they were
 	  cudaMalloc'ed to their proper places in the weights matricies. 
-2. 
+2. src/layers.cpp
+	- Extended the Conv2D class to accept a padding parameter as required by the VGG16 CNN.
+		- line
+	- Extended the Layer::init_weights_biases() funciton to allow for random or initialized
+	  weight matricies. Utilized the custom functions written in h5_utils.cpp to initialize
+	  the matricies with previously computed values. cudaMalloc'd the .h5 values into the
+	  appropriate weight/bias matricies.
+	 	- line ~ 244
+3. src/main.cpp
+	- implemented all 16 layers of VGG16
+		- line ~ 71
+4. src/model.cpp
+	- Extended Model::add so that every layer will keep track of a layer_name to identify
+	  itself with. 
+	  	- line ~ 60
+
+2. vgg16/vgg.py
+	- python code which implements the vgg neural network.
+	- allows us to save the vgg16 neural network weights into an .h5 data format
+3. vgg16/rewrite.py
+	- a partial rewriting of the keras style transfer code.
+	- submitted as the cpu implementation
+
 
 ### Checking functions
 
+Often, I would want to check the values of certain arrays on the GPU to make sure the values
+where being written correctly to memory, so I wrote several utilities to 
+
+1. src/model.cpp
+	- 
 ### Loss functions
 
 ### Utility code
