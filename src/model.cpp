@@ -342,7 +342,6 @@ result *Model::evaluate(const float *eval_X, float *eval_Y, int n_examples)
 
 void Model::transfer(const float *batch_X, float lr)
 {
-    assert(this->has_loss && "Cannot train without a loss function.");
 
     // Copy input and output minibatches into the model's buffers
     copy_input_batch(batch_X);

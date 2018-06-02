@@ -61,7 +61,6 @@ make many updates to the image.
 ## Results
 
 ### implementation of VGG16
-
 One of the main objectives of this project was to implement VGG16 using the infrastructure that
 was give to us during labs 5 and 6. Although I was able to sucessfully steal the weight matricies
 from python keras, store them in a reasonable format (.h5), and upload them sucessfully to the
@@ -72,41 +71,68 @@ the road.
 Code highlights:
 1. src/h5_utils.cpp
 	- C++ scripts that were developed to read in the .h5 files into arrays before they were
-	  cudaMalloc'ed to their proper places in the weights matricies. 
+	  cudaMemcpy'd to their proper places in the weights matricies. 
 2. src/layers.cpp
 	- Extended the Conv2D class to accept a padding parameter as required by the VGG16 CNN.
-		- line
 	- Extended the Layer::init_weights_biases() funciton to allow for random or initialized
 	  weight matricies. Utilized the custom functions written in h5_utils.cpp to initialize
-	  the matricies with previously computed values. cudaMalloc'd the .h5 values into the
-	  appropriate weight/bias matricies.
-	 	- line ~ 244
+	  the matricies with previously computed values. cudaMemcpy'd the .h5 values into the
+	  appropriate weight/bias matricies (line ~ 244).
 3. src/main.cpp
-	- implemented all 16 layers of VGG16
-		- line ~ 71
+	- implemented all 16 layers of VGG16 (line ~ 71)
 4. src/model.cpp
 	- Extended Model::add so that every layer will keep track of a layer_name to identify
-	  itself with. 
-	  	- line ~ 60
+	  itself with (line ~ 60). 
 
-2. vgg16/vgg.py
+5. vgg16/vgg.py
 	- python code which implements the vgg neural network.
 	- allows us to save the vgg16 neural network weights into an .h5 data format
-3. vgg16/rewrite.py
+6. vgg16/rewrite.py
 	- a partial rewriting of the keras style transfer code.
 	- submitted as the cpu implementation
 
-
-### Checking functions
-
+### Data peeping functions
 Often, I would want to check the values of certain arrays on the GPU to make sure the values
-where being written correctly to memory, so I wrote several utilities to 
+where being written correctly to memory, so I wrote several utilities to cudaMalloc the 
+data from the GPU to the CPU and then print
 
+Code highlights
 1. src/model.cpp
-	- 
-### Loss functions
+	- Model::check_weights and Model::check_inputs iterate through all of the layers, 
+	  checks to see if the layer will have a valid entry for the weights and in_batch tensors
+	  respectively and then prints the data (See functions below) (line ~ 373).
+	- These functions proved invaluable since they allowed me to verify without a shaddow of
+	  a doubt that the data and more importantly, order of the data was being properly
+	  written.
+2. src/layers.cpp
+	- The above functions call Layer::print_weight() and Layer::print_input_tensor()
+	  in the layer class respectively to do the cudaMemcpy'ing and printing (line ~ 86).
 
-### Utility code
+### Loss functions
+By far and away the most important section for actually implementing the style transfer 
+algorithm. In addition, this section required the most use of cuda functions. 
+
+Code highlights:
+1. src/layers.cpp
+	- loss_metric: The most important change to this code was the inclusion of the loss_metric
+	  array. This variable held all the relevant data for computing the loss and gradients
+	  during back propagation.
+	- Layer::allocate_buffers was extended such that the 5 style layers and 1 content layer
+	  which needed space for the loss_metric array had space allocated on the GPU. The function simply made a series of string compares to make sure the right layers were gettting the data and then made the allocation (line 118). 
+	- If while making a forward pass, the style_transfer flag is set to 0 or 1, then the
+	  program will read the out_batch data and store the data raw into the loss_metric array 
+	  or will store the gram matrix of out_batch (line ~ 711).
+	- If while making a backward pass, the style_transfer flag is set to 2, then the program
+	  will check every layer to see if it needs to make an addition to the gradient. The code
+	  in this section makes heavy use out of cublas and is a direct implementation of the
+	  algorithm presented in the paper. 
+	- Conv2D::gram 
+
+### Gradient Descent
+1. src/layers.cpp
+	- Extended Input::backward_pass to allow the function to modify the input image based on
+	  the loss gradients. Utilized cudnnGetTensor4dDescriptor() to determine size of image
+	  and used cublasSaxpy() to do the actual descent
 
 
 ## Discussion

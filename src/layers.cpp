@@ -348,14 +348,14 @@ void Input::backward_pass(float learning_rate) {
     //Make flag to determine whether or not to do a gradient descent
     // out_batch -= lr*grad_out_batch;
 
-    // fetch 
-    cudnnDataType_t dtype;
-    int n, c, h, w, n_stride, c_stride, h_stride, w_stride;
-    CUDNN_CALL( cudnnGetTensor4dDescriptor(out_shape, &dtype, &n, &c, &h, &w,
-        &n_stride, &c_stride, &h_stride, &w_stride) );
 
-    float eta = -learning_rate;
     if (style_transfer == 2){
+        cudnnDataType_t dtype;
+        int n, c, h, w, n_stride, c_stride, h_stride, w_stride;
+        CUDNN_CALL( cudnnGetTensor4dDescriptor(out_shape, &dtype, &n, &c, &h, &w,
+            &n_stride, &c_stride, &h_stride, &w_stride) );
+
+        float eta = -learning_rate;
         CUBLAS_CALL(cublasSaxpy(cublasHandle, n*c*h*w,
                                 &eta,
                                 grad_out_batch, 1,
