@@ -61,7 +61,6 @@ int main(int argc, char **argv)
     
     std::cout << "input NCHW: " << 1 << " " << c << " " << h << " " << w << " " << std::endl;
 
-    // Initialize a model to classify the MNIST dataset
     bool random_weights = false;
     Model *model = new Model(1, c, h, w, random_weights);
     // std::cout << " hello "<< std::endl;
@@ -147,7 +146,7 @@ int main(int argc, char **argv)
 
     //Do the Style transfer
     model->set_mode(2);
-    test_y = model->predict(test_x, 1); // CHANGE TO TRANSFER, make func, stick in loop
+    test_y = model->transfer(test_x, 1); // CHANGE TO TRANSFER, make func, stick in loop
 
 
     model->check_inputs();

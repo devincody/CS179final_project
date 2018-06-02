@@ -42,6 +42,7 @@ public:
     void check_weights();
     void check_inputs();
     void set_mode(int flag);
+    void transfer(const float *batch_X, float lr);
     /*******************************/
 
 private:

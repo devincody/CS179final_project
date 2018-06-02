@@ -62,22 +62,22 @@ make many updates to the image.
 
 ### implementation of VGG16
 One of the main objectives of this project was to implement VGG16 using the infrastructure that
-was give to us during labs 5 and 6. Although I was able to sucessfully steal the weight matricies
-from python keras, store them in a reasonable format (.h5), and upload them sucessfully to the
-weights matricies as defined in the layers, getting reasonable predictions out of the CNN was 
+was give to us during labs 5 and 6. Although I was able to successfully steal the weight matrices
+from python keras, store them in a reasonable format (.h5), and upload them successfully to the
+weights matrices as defined in the layers, getting reasonable predictions out of the CNN was 
 still very difficult. Ultimately, the error is likely a data formatting issue somewhere a long
 the road. 
 
 Code highlights:
 1. src/h5_utils.cpp
 	- C++ scripts that were developed to read in the .h5 files into arrays before they were
-	  cudaMemcpy'd to their proper places in the weights matricies. 
+	  cudaMemcpy'd to their proper places in the weights matrices. 
 2. src/layers.cpp
 	- Extended the Conv2D class to accept a padding parameter as required by the VGG16 CNN.
 	- Extended the Layer::init_weights_biases() funciton to allow for random or initialized
-	  weight matricies. Utilized the custom functions written in h5_utils.cpp to initialize
-	  the matricies with previously computed values. cudaMemcpy'd the .h5 values into the
-	  appropriate weight/bias matricies (line ~ 244).
+	  weight matrices. Utilized the custom functions written in h5_utils.cpp to initialize
+	  the matrices with previously computed values. cudaMemcpy'd the .h5 values into the
+	  appropriate weight/bias matrices (line ~ 244).
 3. src/main.cpp
 	- implemented all 16 layers of VGG16 (line ~ 71)
 4. src/model.cpp
@@ -125,22 +125,36 @@ Code highlights:
 	- If while making a backward pass, the style_transfer flag is set to 2, then the program
 	  will check every layer to see if it needs to make an addition to the gradient. The code
 	  in this section makes heavy use out of cublas and is a direct implementation of the
-	  algorithm presented in the paper. 
-	- Conv2D::gram 
+	  algorithm presented in the paper (line ~ 832). 
+	- Conv2D::gram is a simple function which utilizes a cublas general matrix-matrix multiply
+	  to implement the calculation of a gram matrix of a given input matrix. This function is
+	  used heavily throughout the code (line ~ 900).
+2. src/model.cpp
+	- I extended the model class to provide some convenience functions. Chief among those is
+	  the set_mode() function which iterates through all the layers and sets the
+	  style_transfer flag.
 
 ### Gradient Descent
 1. src/layers.cpp
 	- Extended Input::backward_pass to allow the function to modify the input image based on
 	  the loss gradients. Utilized cudnnGetTensor4dDescriptor() to determine size of image
 	  and used cublasSaxpy() to do the actual descent
-
+2. src/model.cpp
+	- Defined a function called transfer() which repeatedly makes forward passes followed by 
+	  backwards passes. Provided style_transfer is in the right mode, then the input image will be slowly morphed into a suitable "combination" image.
 
 ## Discussion
 
-### Sucesses
+### Successes
 
-If there's anything I've learnt
+If there's anything I've learnt, it's how to wade through the depths of cuda documentation. I've also learnt that there are far too many ways to order a 4D tensor. More seriously though, I was able to download, upload, copy, and manipulate large datasets (500MB) by harnessing the power of the GPU. The VGG network is able to make (bad) predictions, but I think we are only one or two tensor re-orderings before the predictions start making sense. Once the network is making predictions, it should not be too much more difficult to flip the switch and start making style transfers.
 
 ### Failures
 
+Obviously, we weren't able to make quality predictions or do actual style transfer, however the majority of the code is there and works well. I do think there is only a few more tweaks before we can get some real results.
+
 ### Future Work
+
+The last bit of work (I think) is to figure out where the VGG predicitons are going wrong, whether there is some issue with data order or the input images. I am faily confident in the style transfer code. 
+
+## Execution Instructions

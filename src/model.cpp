@@ -345,16 +345,18 @@ void Model::transfer(const float *batch_X, float lr)
 
     // Copy input and output minibatches into the model's buffers
     copy_input_batch(batch_X);
-
-    // Do a forward pass through every layer
     std::vector<Layer *>::iterator it;
-    for (it = this->layers->begin(); it != this->layers->end(); ++it)
-        (*it)->forward_pass();
-
-    // Do a backward pass through every layer
     std::vector<Layer *>::reverse_iterator rit;
-    for (rit = this->layers->rbegin(); rit != this->layers->rend(); ++rit)
-        (*rit)->backward_pass(lr);
+
+    for (int i = 0; i < 1000; i++){
+        // Do a forward pass through every layer
+        for (it = this->layers->begin(); it != this->layers->end(); ++it)
+            (*it)->forward_pass();
+
+        // Do a backward pass through every layer
+        for (rit = this->layers->rbegin(); rit != this->layers->rend(); ++rit)
+            (*rit)->backward_pass(lr);
+    }
 }
 
 void Model::set_mode(int flag)
