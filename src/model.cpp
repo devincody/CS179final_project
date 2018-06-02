@@ -340,7 +340,7 @@ result *Model::evaluate(const float *eval_X, float *eval_Y, int n_examples)
 }
 
 
-void Model::transfer(const float *batch_X, float lr)
+void Model::transfer(float *batch_X, float lr)
 {
 
     // Copy input and output minibatches into the model's buffers
