@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 
         //Do the Style transfer
         model->set_mode(2);
-        test_y = model->transfer(comb_img, 1); // CHANGE TO TRANSFER, make func, stick in loop
+        test_y = model->transfer(comb_img, .05); // CHANGE TO TRANSFER, make func, stick in loop
     } else {
         // MAKE VGG PREDICTION
         test_y = model->predict(test_x, 1)
