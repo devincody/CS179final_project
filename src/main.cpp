@@ -155,7 +155,7 @@ int main(int argc, char **argv)
         test_y = model->transfer(comb_img, .05); // CHANGE TO TRANSFER, make func, stick in loop
     } else {
         // MAKE VGG PREDICTION
-        test_y = model->predict(test_x, 1)
+        test_y = model->predict(test_x, 1);
         // WRITE DATA TO FILE
         std::ofstream prediction_file;
         prediction_file.open("outputs/predictions.txt");
